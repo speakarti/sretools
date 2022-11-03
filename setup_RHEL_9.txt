@@ -1,0 +1,123 @@
+->Register and Download RHEL 9.0 developer edition, create bootable disk and install rhel 9.0
+
+->first update linux box with latest versions
+===========================================
+sudo dnf repolist
+sudo dnf upgrade
+sudo dnf upgrade --security
+
+
+
+-> upgrade subscription managent repositories 
+============================================
+https://docs.fedoraproject.org/en-US/epel/
+https://docs.fedoraproject.org/en-US/epel/#_quickstart
+Enable EPEL (Extra Packages for Enterprise Linus) repository
+-----------------------------------------------------
+[root@g580 Downloads]# subscription-manager repos --enable codeready-builder-for-rhel-9-$(arch)-rpms
+Repository 'codeready-builder-for-rhel-9-x86_64-rpms' is enabled for this system.
+
+dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+
+
+
+->create user and group 
+
+->Configure email accounts on evolution
+
+
+->download, install & Configure Citrix
+============================================
+download citrix client (ICAClient) and ctxusb
+download certificates (last tab) from corporate portal after login in (Morgan Stanley)
+
+-rw-r--r--. 1 agupta agupta    161348 Oct 10 01:11 ctxusb-22.9.0.21-1.x86_64.rpm
+-rw-r--r--. 1 agupta agupta 158425804 Oct 10 01:06 ICAClient-rhel-22.9.0.21-0.x86_64.rpm
+-rw-r--r--. 1 agupta agupta      8260 Oct 10 15:00 mydesk-morganstanley-com-chain.pem
+-rw-r--r--. 1 agupta agupta      2128 Oct 10 15:00 mydesk-morganstanley-com.pem
+
+->install rpm packages
+remove Citrix to reinstall - if required (
+sudo dnf list | grep -i ICAClient
+sudo dnf remove ICAClient.x86_64
+
+dnf install ICAClient-rhel-22.9.0.21-0.x86_64.rpm
+dnf install ctxusb-22.9.0.21-1.x86_64.rpm
+
+->copy certificates from download location to ICA keystore
+[root@g580 Downloads]# sudo cp *.pem /opt/Citrix/ICAClient/keystore/cacerts/
+
+->rehash (as root)
+[root@g580 Downloads]# /opt/Citrix/ICAClient/util/ctx_rehash
+
+
+
+
+
+->Install zoom
+===================
+dnf install <path to URL> -y
+sudo dnf install https://zoom.us/client/5.12.0.4682/zoom_x86_64.rpm -y
+sudo dnf install https://zoom.us/client/5.12.2.4816/zoom_x86_64.rpm -y
+https://tecadmin.net/install-zoom-client-on-fedora/
+https://zoom.us/client/5.12.0.4682/zoom_x86_64.rpm
+
+sudo yum -y install wget
+wget https://zoom.us/client/latest/zoom_x86_64.rpm
+
+setup mic and other sound devices
+=============================
+https://kb.vmware.com/s/article/89422
+
+Note: this didn't work for my machine as I have Intel I5 gen 3 processor having some issue with sound card / mic, as these are not working with many applications. Tried to replace pipewire with pulseradio, but still din't work
+
+[agupta@g580 Documents]$ sudo dnf list | grep -i pulse
+pipewire-pulseaudio.x86_64                                0.3.47-2.el9_0                                    @AppStream                              
+pulseaudio-libs.x86_64                                    15.0-2.el9                                        @AppStream                              
+pulseaudio-libs-glib2.x86_64                              15.0-2.el9                                        @AppStream                              
+pulseaudio-utils.x86_64                                   15.0-2.el9                                        @AppStream                              
+alsa-plugins-pulseaudio.i686                              1.2.2-8.el9_0                                     rhel-9-for-x86_64-appstream-rpms        
+alsa-plugins-pulseaudio.x86_64                            1.2.2-8.el9_0                                     rhel-9-for-x86_64-appstream-rpms        
+baresip-pulse.x86_64                                      2.8.1-1.el9                                       epel                                    
+kde-settings-pulseaudio.noarch                            35.0-2.el9.1                                      epel                                    
+mpg123-plugins-pulseaudio.x86_64                          1.26.2-5.el9                                      rhel-9-for-x86_64-appstream-rpms        
+pulseaudio.x86_64                                         15.0-2.el9                                        rhel-9-for-x86_64-appstream-rpms        
+pulseaudio-libs.i686                                      15.0-2.el9                                        rhel-9-for-x86_64-appstream-rpms        
+pulseaudio-libs-devel.i686                                15.0-2.el9                                        rhel-9-for-x86_64-appstream-rpms        
+pulseaudio-libs-devel.x86_64                              15.0-2.el9                                        rhel-9-for-x86_64-appstream-rpms        
+pulseaudio-libs-glib2.i686                                15.0-2.el9                                        rhel-9-for-x86_64-appstream-rpms        
+pulseaudio-module-bluetooth.x86_64                        15.0-2.el9                                        rhel-9-for-x86_64-appstream-rpms        
+pulseaudio-module-x11.x86_64                              15.0-2.el9                                        rhel-9-for-x86_64-appstream-rpms        
+pulseaudio-qt.x86_64                                      1.2-6.el9                                         epel                                    
+pulseaudio-qt-devel.x86_64                                1.2-6.el9                                         epel                                    
+xfce4-pulseaudio-plugin.x86_64                            0.4.3-7.el9                                       epel                                    
+[agupta@g580 Documents]$ 
+
+
+[agupta@g580 Documents]$ sudo dnf swap --allowerasing pipewire-pulseaudio pulseaudio
+Updating Subscription Management repositories.
+Last metadata expiration check: 0:32:19 ago on Wed 19 Oct 2022 09:42:35 PM IST.
+Dependencies resolved.
+===================================================================================================================================================================================================================
+ Package                                                   Architecture                         Version                                       Repository                                                      Size
+===================================================================================================================================================================================================================
+Installing:
+ pulseaudio                                                x86_64                               15.0-2.el9                                    rhel-9-for-x86_64-appstream-rpms                               1.0 M
+Installing dependencies:
+ fftw-libs-single                                          x86_64                               3.3.8-12.el9                                  rhel-9-for-x86_64-appstream-rpms                               940 k
+ pulseaudio-module-bluetooth                               x86_64                               15.0-2.el9                                    rhel-9-for-x86_64-appstream-rpms                               108 k
+ speexdsp                                                  x86_64                               1.2.0-5.el9                                   rhel-9-for-x86_64-appstream-rpms                               455 k
+Removing:
+ pipewire-pulseaudio                                       x86_64                               0.3.47-2.el9_0                                @AppStream                                                      23 k
+Removing unused dependencies:
+ pulseaudio-utils                                          x86_64                               15.0-2.el9                                    @AppStream                                                     199 k
+
+Transaction Summary
+===================================================================================================================================================================================================================
+Install  4 Packages
+Remove   2 Packages
+
+Total download size: 2.5 M
+Is this ok [y/N]: 
+
+
